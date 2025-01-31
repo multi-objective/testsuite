@@ -1,0 +1,5 @@
+xzcat ../data/spherical-20000.dat.xz | $PROGRAM --quiet | sort | cat --squeeze-blank
+
+
+
+

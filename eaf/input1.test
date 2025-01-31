@@ -1,0 +1,1 @@
+${PROGRAM} --quiet -i- ../data/input1.dat | sort | cat --squeeze-blank

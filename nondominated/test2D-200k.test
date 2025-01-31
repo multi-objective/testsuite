@@ -1,0 +1,2 @@
+xzcat ../data/test2D-200k.inp.xz | $PROGRAM --quiet --filter | sort
+

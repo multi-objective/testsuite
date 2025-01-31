@@ -1,0 +1,3 @@
+warning: badref.inp: some points do not strictly dominate the reference point and they will be discarded
+error: none of the points strictly dominates the reference point
+

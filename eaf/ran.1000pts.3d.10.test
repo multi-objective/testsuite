@@ -1,0 +1,3 @@
+${PROGRAM} --quiet ../data/ran.1000pts.3d.10 | sort | cat --squeeze-blank
+
+

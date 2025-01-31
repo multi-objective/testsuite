@@ -1,0 +1,2 @@
+${PROGRAM} -r "8                8                8                8" test_equal_values_dim0.inp 2>&1 | sed 's/^[^:]\+: //'
+

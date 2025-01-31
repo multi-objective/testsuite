@@ -1,0 +1,7 @@
+file1=$(mktemp)
+file2=$(mktemp)
+xzcat ../data/ALG_1_dat.xz > $file1
+xzcat ../data/ALG_2_dat.xz > $file2
+${PROGRAM} -d $file1 $file2
+rm -f $file1 $file2
+

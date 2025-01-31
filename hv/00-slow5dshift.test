@@ -1,0 +1,1 @@
+${PROGRAM} -r "0 0 0 0 0" 00-slow5d.inp --shift

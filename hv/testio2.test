@@ -1,0 +1,1 @@
+${PROGRAM} -u -r "10 10 10" testio2.inp
