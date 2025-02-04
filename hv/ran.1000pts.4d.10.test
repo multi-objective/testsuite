@@ -1,0 +1,2 @@
+cat ../data/ran.1000pts.4d.10 | ${PROGRAM} -r "10 10 10 10" -u
+
