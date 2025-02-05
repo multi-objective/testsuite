@@ -1,1 +1,1 @@
-cat ../data/ran.10pts.9d.10 | ${PROGRAM} -r "10 10 10 10 10 10 10 10 10" -u --shift
+cat ../data/${TESTNAME%%-shift} | ${PROGRAM} -r "10 10 10 10 10 10 10 10 10" -u --shift

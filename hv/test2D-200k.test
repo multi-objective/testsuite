@@ -1,2 +1,2 @@
-xzcat ../data/test2D-200k.inp.xz | $PROGRAM -r "-117751 -117751" 2>&1 | sed 's/^[^:]\+: //'
+xzcat ../data/${TESTNAME}.inp.xz | $PROGRAM -r "-117751 -117751" 2>&1 | sed 's/^[^:]\+: //'
 

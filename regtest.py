@@ -8,8 +8,8 @@ import tempfile
 from joblib import Parallel, delayed
 
 
-def runcmd(command):
-    result = subprocess.run(command, shell=True)
+def runcmd(command, env = None):
+    result = subprocess.run(command, shell=True, env = env)
     return result.returncode
 
 
@@ -34,9 +34,12 @@ def run_test(test, program, dir_out):
         diff = "xzdiff"
 
     print("{:<60}".format("Running " + test + " :"), end=" ")
-    command = f"PROGRAM={program} . ./{test} 2>&1 {compress_out}1> {outfile}"
+    # FIXME: How can we avoid using '.' to read the test?
+    # Using 'source' only work in bash.
+    command = f". ./{test} 2>&1 {compress_out}1> {outfile}"
     start_time = time.time()
-    runcmd(command)
+    runcmd(command, env = dict(PROGRAM=program,
+                               TESTNAME=test.replace(".test", "")))
     elapsed_time = time.time() - start_time
 
     if runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") == 0:
