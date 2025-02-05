@@ -23,7 +23,8 @@ def is_exe(fpath):
 
 
 def run_test(test, program, dir_out):
-    outfile = os.path.join(dir_out, test.replace(".test", ".out"))
+    testbasename = os.path.basename(test)
+    outfile = os.path.join(dir_out, testbasename.replace(".test", ".out"))
     expfile = test.replace(".test", ".exp")
     compress_out = "| cat "  # So that redirection works
     diff = "diff"
@@ -39,7 +40,7 @@ def run_test(test, program, dir_out):
     command = f". ./{test} 2>&1 {compress_out}1> {outfile}"
     start_time = time.time()
     runcmd(command, env = dict(PROGRAM=program,
-                               TESTNAME=test.replace(".test", "")))
+                               TESTNAME=testbasename.replace(".test", "")))
     elapsed_time = time.time() - start_time
 
     if runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") == 0:
