@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import shutil
 import subprocess
 import sys
 import glob
@@ -8,8 +9,8 @@ import tempfile
 from joblib import Parallel, delayed
 
 
-def runcmd(command, env = None):
-    result = subprocess.run(command, shell=True, env = env)
+def runcmd(command, cwd = None, env = None):
+    result = subprocess.run(command, shell=True, env = env, cwd = cwd)
     return result.returncode
 
 
@@ -23,6 +24,9 @@ def is_exe(fpath):
 
 
 def run_test(test, program, dir_out):
+    testdirname = os.path.dirname(test)
+    if testdirname == "":
+        testdirname = None
     testbasename = os.path.basename(test)
     outfile = os.path.join(dir_out, testbasename.replace(".test", ".out"))
     expfile = test.replace(".test", ".exp")
@@ -36,11 +40,12 @@ def run_test(test, program, dir_out):
 
     print("{:<60}".format("Running " + test + " :"), end=" ")
     # FIXME: How can we avoid using '.' to read the test?
-    # Using 'source' only work in bash.
-    command = f". ./{test} 2>&1 {compress_out}1> {outfile}"
+    # Using 'source' only works in bash.
+    command = f". ./{testbasename} 2>&1 {compress_out}1> {outfile}"
     start_time = time.time()
-    runcmd(command, env = dict(PROGRAM=program,
-                               TESTNAME=testbasename.replace(".test", "")))
+    runcmd(command, cwd = testdirname,
+           env = dict(PROGRAM=program,
+                      TESTNAME=testbasename.replace(".test", "")))
     elapsed_time = time.time() - start_time
 
     if runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") == 0:
@@ -60,7 +65,7 @@ def main():
         print("\t for example:", sys.argv[0], "../bin/hv")
         sys.exit(1)
 
-    program = os.path.expanduser(sys.argv[1])
+    program = os.path.realpath(os.path.expanduser(sys.argv[1]))
     if not is_exe(program):
         print(f"error: '{program}' not found or not executable!")
         sys.exit(1)
@@ -70,18 +75,22 @@ def main():
         if not test.endswith(".test"):
             print(test, "is not a test file")
             sys.exit(1)
+        if not os.path.isfile(test):
+            print(test, "not found or not readable")
+            sys.exit(1)
+            
 
     ntotal = len(tests)
-    dir_out = tempfile.TemporaryDirectory()
+    dir_out = tempfile.mkdtemp()
     # print(dir_out)
     # os.makedirs(dir_out, exist_ok=True)
     ok = Parallel(n_jobs=-2)(
-        delayed(run_test)(test, dir_out=dir_out.name, program=program) for test in tests
+        delayed(run_test)(test, dir_out=dir_out, program=program) for test in tests
     )
-    dir_out.cleanup()
-
     npassed = sum(ok)
     nfailed = ntotal - npassed
+    if nfailed == 0:
+        shutil.rmtree(dir_out)
     print("\n === regression test summary ===\n")
     print(f"# of total tests : {ntotal:5d}")
     print(f"# of passed tests: {npassed:5d}")
