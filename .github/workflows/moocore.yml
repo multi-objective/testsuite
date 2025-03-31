@@ -1,0 +1,107 @@
+name: moocore
+
+on:
+  push:
+    branches-ignore: [gh-pages]
+    paths-ignore:
+      - '*.md'
+
+  pull_request:
+    branches-ignore: [gh-pages]
+    paths-ignore:
+      - '*.md'
+  # Manual run
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    name: Build C code on ${{ matrix.os }} with ${{ matrix.cc }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        os: [ubuntu-22.04, windows-latest, macos-13, macos-14]
+        cc: [ gcc ]
+        include:
+          - { os: macos-13, cc: clang }
+          - { os: macos-14, cc: clang }
+          - { os: ubuntu-24.04, cc: gcc-14 }
+    env:
+      CC: ${{ matrix.cc }}
+
+    steps:
+      - name: Checkout moocore
+        uses: actions/checkout@v4
+        with:
+          repository: multi-objective/moocore
+          sparse-checkout: |
+            c
+            
+      - name: Checkout testsuite
+        uses: actions/checkout@v4
+        with:
+          path: testsuite
+
+      - name: Put MSYS2_MinGW64 on PATH
+        if: runner.os == 'Windows'
+        run: |
+          echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "${{ runner.temp }}/msys64/mingw64/usr/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - run: $CC -v
+        shell: bash
+
+      - run: make -C c time
+      - run: make -C c test
+
+  msys2:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sys: [ clang64 ]
+        cc: [ clang ]
+        #- { sys: mingw64, cc: gcc }
+        #- { sys: ucrt64,  cc: gcc }
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Disable autocrlf
+        shell: pwsh
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout moocore
+        uses: actions/checkout@v4
+        with:
+          repository: multi-objective/moocore
+          sparse-checkout: |
+            c
+            
+      - name: Checkout testsuite
+        uses: actions/checkout@v4
+        with:
+          path: testsuite
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: >-
+            make
+          pacboy: >-
+            ${{ matrix.cc }}:p
+
+      - run: make -C c time CC=${{ matrix.cc }}
+      - run: make -C c test CC=${{ matrix.cc }}
+
