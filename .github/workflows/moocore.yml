@@ -62,12 +62,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install joblib
+          python3 -m pip install -r testsuite/requirements.txt
         
       - run: make -C c time
       - run: make -C c test
@@ -119,12 +118,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install joblib
+          python3 -m pip install -r testsuite/requirements.txt
           
       - run: make -C c time CC=${{ matrix.cc }}
       - run: make -C c test CC=${{ matrix.cc }}
