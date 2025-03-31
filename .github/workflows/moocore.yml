@@ -28,6 +28,7 @@ jobs:
         # macos-13 is an intel runner, macos-14 is apple silicon
         os: [ubuntu-22.04, windows-latest, macos-13, macos-14]
         cc: [ gcc ]
+        python-version: ['3.10']
         include:
           - { os: macos-13, cc: clang }
           - { os: macos-14, cc: clang }
@@ -57,6 +58,17 @@ jobs:
       - run: $CC -v
         shell: bash
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install joblib
+        
       - run: make -C c time
       - run: make -C c test
 
@@ -67,6 +79,7 @@ jobs:
       matrix:
         sys: [ clang64 ]
         cc: [ clang ]
+        python-version: ['3.10']
         #- { sys: mingw64, cc: gcc }
         #- { sys: ucrt64,  cc: gcc }
 
@@ -102,6 +115,17 @@ jobs:
           pacboy: >-
             ${{ matrix.cc }}:p
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install joblib
+          
       - run: make -C c time CC=${{ matrix.cc }}
       - run: make -C c test CC=${{ matrix.cc }}
 
