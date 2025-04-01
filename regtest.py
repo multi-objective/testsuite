@@ -9,7 +9,8 @@ import tempfile
 from joblib import Parallel, delayed
 
 
-def runcmd(command, cwd = None, env = None):
+def runcmd(command, cwd = None, env = {}):
+    env['LC_ALL'] = "C" # To avoid problems with sorting.
     result = subprocess.run(command, shell=True, env = env, cwd = cwd)
     return result.returncode
 
@@ -22,7 +23,7 @@ def is_exe(fpath):
         and os.path.getsize(fpath) > 0
     )
 
-
+# FIXME: Replace "diff" with difflib.
 def run_test(test, program, dir_out):
     testdirname = os.path.dirname(test)
     if testdirname == "":
