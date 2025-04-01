@@ -1,0 +1,4 @@
+${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --additive
+${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --multiplicative
+
+

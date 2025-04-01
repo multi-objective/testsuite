@@ -1,0 +1,2 @@
+${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --all
+
