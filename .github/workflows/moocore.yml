@@ -31,8 +31,11 @@ jobs:
         include:
           - { os: ubuntu-22.04, cc: gcc, python-version: '3.10' }
           - { os: ubuntu-24.04, cc: gcc-14, python-version: '3.10' }
-          - { os: macos-13, cc: clang, python-version: '3.10' }
-          - { os: macos-14, cc: clang, python-version: '3.10' }
+          # FIXME: needs
+          # * brew install xz
+          # * fix options only available in GNU diff
+          #- { os: macos-13, cc: clang, python-version: '3.10' }
+          #- { os: macos-14, cc: clang, python-version: '3.10' }
     env:
       CC: ${{ matrix.cc }}
 
