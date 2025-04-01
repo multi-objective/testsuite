@@ -17,6 +17,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read # access to check out code and install dependencies
+  
 jobs:
   test:
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
@@ -25,13 +28,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
-        cc: [ gcc ]
-        python-version: ['3.10']
         include:
-          - { os: macos-13, cc: clang }
-          - { os: macos-14, cc: clang }
-          - { os: ubuntu-24.04, cc: gcc-14 }
+          - { os: ubuntu-22.04, cc: gcc, python-version: '3.10' }
+          - { os: ubuntu-24.04, cc: gcc-14, python-version: '3.10' }
+          - { os: macos-13, cc: clang, python-version: '3.10' }
+          - { os: macos-14, cc: clang, python-version: '3.10' }
     env:
       CC: ${{ matrix.cc }}
 
@@ -58,6 +59,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python3 -m venv env
+          source env/bin/activate
           python3 -m pip install --upgrade pip
           python3 -m pip install -r testsuite/requirements.txt
         
