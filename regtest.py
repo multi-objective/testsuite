@@ -8,6 +8,32 @@ import time
 import tempfile
 from joblib import Parallel, delayed
 
+import difflib
+import lzma
+import re
+
+_RE_COMBINE_WHITESPACE = re.compile(r"\s+")
+
+# FIXME: Replace "diff" with difflib.
+def normalize_file_lines(file_path):
+    """Yield normalized lines from a file, supporting both regular and XZ-compressed files."""
+    open_func = lzma.open if file_path.endswith('.xz') else open  # Choose the correct open function
+    with open_func(file_path, 'rt', encoding='utf-8') as f:
+        for line in f:
+            line = _RE_COMBINE_WHITESPACE.sub(" ", line).strip() # Normalize whitespace, and tabs
+            if line:  # Ignore blank lines
+                yield line.lower() # Normalize case
+
+def generate_unified_diff(file1, file2):
+    """Generate a unified diff between two files with normalization."""
+    diff = difflib.unified_diff(
+        list(normalize_file_lines(file1)),  # Processed line-by-line
+        list(normalize_file_lines(file2)),
+        fromfile=file1, 
+        tofile=file2, 
+        lineterm=''
+    )
+    return '\n'.join(diff)
 
 def runcmd(command, cwd = None, env = {}):
     env['LC_ALL'] = "C" # To avoid problems with sorting.
@@ -23,7 +49,6 @@ def is_exe(fpath):
         and os.path.getsize(fpath) > 0
     )
 
-# FIXME: Replace "diff" with difflib.
 def run_test(test, program, dir_out):
     testdirname = os.path.dirname(test)
     if testdirname == "":
@@ -49,14 +74,17 @@ def run_test(test, program, dir_out):
                       TESTNAME=testbasename.replace(".test", "")))
     elapsed_time = time.time() - start_time
 
-    if runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") == 0:
+    diff_output = generate_unified_diff(expfile, outfile)
+    if len(diff_output) == 0:
         print(f"passed  {elapsed_time:6.2f}")
+        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") == 0
         os.remove(outfile)
         return True
     else:
         print(f"FAILED! {elapsed_time:6.2f}")
-        print(f"{diff} -uiEBw -- {expfile} {outfile}")
-        print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
+        print(diff_output) # f"{diff} -uiEBw -- {expfile} {outfile}")
+        #print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
+        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") != 0, f"{generate_unified_diff(expfile, outfile)}"
         return False
 
 
