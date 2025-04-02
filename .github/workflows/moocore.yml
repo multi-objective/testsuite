@@ -75,4 +75,4 @@ jobs:
       - name: make test
         run: |
           source env/bin/activate
-          make -C c test
+          make -C c test OPT_CFLAGS=-O3 -flto
