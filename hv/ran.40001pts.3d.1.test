@@ -1,2 +1,2 @@
-cat ../data/${TESTNAME} | ${PROGRAM} -r "10 10 10" -u
+${PROGRAM} -r "10 10 10" -u < ../data/${TESTNAME}
 

@@ -1,1 +1,1 @@
-${PROGRAM} -r "8 9 8 8" test_equal_values_dim1.inp 2>&1 | sed 's/^[^:]\+: //'
+${PROGRAM} -r "8 9 8 8" ${TESTNAME}.inp 2>&1 | sed 's/^[^:]\+: //'
