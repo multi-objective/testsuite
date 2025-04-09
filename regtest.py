@@ -17,7 +17,7 @@ _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 # FIXME: Replace "diff" with difflib.
 def normalize_file_lines(file_path):
     """Yield normalized lines from a file, supporting both regular and XZ-compressed files."""
-    open_func = lzma.open if file_path.endswith('.xz') else open  # Choose the correct open function
+    open_func = lzma.open if file_path.endswith('.xz') else open
     with open_func(file_path, 'rt', encoding='utf-8') as f:
         for line in f:
             line = _RE_COMBINE_WHITESPACE.sub(" ", line).strip() # Normalize whitespace, and tabs
@@ -27,7 +27,7 @@ def normalize_file_lines(file_path):
 def generate_unified_diff(file1, file2):
     """Generate a unified diff between two files with normalization."""
     diff = difflib.unified_diff(
-        list(normalize_file_lines(file1)),  # Processed line-by-line
+        list(normalize_file_lines(file1)),
         list(normalize_file_lines(file2)),
         fromfile=file1, 
         tofile=file2, 
@@ -35,9 +35,17 @@ def generate_unified_diff(file1, file2):
     )
     return '\n'.join(diff)
 
-def runcmd(command, cwd = None, env = {}):
+def runcmd(command, cwd = None, env = {}, outfile = subprocess.DEVNULL):
     env['LC_ALL'] = "C" # To avoid problems with sorting.
-    result = subprocess.run(command, shell=True, env = env, cwd = cwd)
+    stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
+    result = subprocess.run(command, shell=True, env = env, cwd = cwd,
+                            stdout = stdout, stderr = subprocess.STDOUT)
+
+    if stdout == subprocess.PIPE:
+        open_func = lzma.open if outfile.endswith('.xz') else open
+        with open_func(outfile, "wb") as fh:
+            fh.write(result.stdout)
+            
     return result.returncode
 
 
@@ -56,35 +64,33 @@ def run_test(test, program, dir_out):
     testbasename = os.path.basename(test)
     outfile = os.path.join(dir_out, testbasename.replace(".test", ".out"))
     expfile = test.replace(".test", ".exp")
-    compress_out = "| cat "  # So that redirection works
     diff = "diff"
     if not os.access(expfile, os.R_OK) and os.access(expfile + ".xz", os.R_OK):
         expfile = expfile + ".xz"
         outfile = outfile + ".xz"
-        compress_out = " | xz "
         diff = "xzdiff"
 
     print("{:<60}".format("Running " + test + " :"), end=" ")
+    start_time = time.time()
     # FIXME: How can we avoid using '.' to read the test?
     # Using 'source' only works in bash.
-    command = f". ./{testbasename} 2>&1 {compress_out}1> {outfile}"
-    start_time = time.time()
-    runcmd(command, cwd = testdirname,
+    runcmd(f". ./{testbasename}", cwd = testdirname,
            env = dict(PROGRAM=program,
-                      TESTNAME=testbasename.replace(".test", "")))
+                      TESTNAME=testbasename.replace(".test", "")),
+           outfile = outfile)
     elapsed_time = time.time() - start_time
 
     diff_output = generate_unified_diff(expfile, outfile)
     if len(diff_output) == 0:
         print(f"passed  {elapsed_time:6.2f}")
-        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") == 0
+        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") == 0
         os.remove(outfile)
         return True
     else:
         print(f"FAILED! {elapsed_time:6.2f}")
         print(diff_output) # f"{diff} -uiEBw -- {expfile} {outfile}")
         #print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
-        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile} 1> /dev/null  2>&1") != 0, f"{generate_unified_diff(expfile, outfile)}"
+        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") != 0, f"{generate_unified_diff(expfile, outfile)}"
         return False
 
 
@@ -111,8 +117,6 @@ def main():
 
     ntotal = len(tests)
     dir_out = tempfile.mkdtemp()
-    # print(dir_out)
-    # os.makedirs(dir_out, exist_ok=True)
     ok = Parallel(n_jobs=-2)(
         delayed(run_test)(test, dir_out=dir_out, program=program) for test in tests
     )
