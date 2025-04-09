@@ -1,0 +1,1 @@
+${PROGRAM} ../data/DTLZDiscontinuousShape.3d.front.1000pts.10 ../data/DTLZLinearShape.3d.front.1000pts.10 ../data/DTLZSphereShape.3d.front.1000pts.10 ../data/ran.1000pts.3d.10
