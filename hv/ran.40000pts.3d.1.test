@@ -1,2 +1,2 @@
-${PROGRAM} -r "10 10 10" -u < ../data/${TESTNAME}
+xzcat ../data/${TESTNAME}.xz | ${PROGRAM} -r "10 10 10" -u 
 
