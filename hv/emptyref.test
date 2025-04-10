@@ -1,1 +1,1 @@
-${PROGRAM} -r "-4 -4 -4 -4 -4 -4" badref.inp 2>&1 | sed 's/^[^:]\+: //'
+${PROGRAM} -r "-4 -4 -4 -4 -4 -4" badref.inp

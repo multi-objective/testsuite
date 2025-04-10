@@ -1,1 +1,1 @@
-${PROGRAM} -r "0 0 0 0 0 -3" badref.inp 2>&1 | sed 's/^[^:]\+: //'
+${PROGRAM} -r "0 0 0 0 0 -3" badref.inp
