@@ -8,9 +8,9 @@ import time
 import tempfile
 from joblib import Parallel, delayed
 
+import re
 import difflib
 import lzma
-import re
 
 _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
@@ -24,11 +24,73 @@ def normalize_file_lines(file_path):
             if line:  # Ignore blank lines
                 yield line.lower() # Normalize case
 
+# This function is adapted from https://github.com/python/cpython/blob/main/Lib/doctest.py
+# Released to the public domain 16-Jan-2001, by Tim Peters (tim@python.org).
+def ellipsis_match(want, got):
+    """"Compares ``want`` to ``got`` ignoring differences where ``...`` appears in ``want``.
+    """
+    ELLIPSIS_MARKER='...'
+    if ELLIPSIS_MARKER not in want:
+        return want == got
+    
+    # Find "the real" strings.
+    ws = want.split(ELLIPSIS_MARKER)
+    assert len(ws) >= 2
+
+    # Deal with exact matches possibly needed at one or both ends.
+    startpos, endpos = 0, len(got)
+    w = ws[0]
+    if w: # starts with exact match
+        if got.startswith(w):
+            startpos = len(w)
+            del ws[0]
+        else:
+            return False
+    w = ws[-1]
+    if w: # ends with exact match
+        if got.endswith(w):
+            endpos -= len(w)
+            del ws[-1]
+        else:
+            return False
+
+    if startpos > endpos:
+        # Exact end matches required more characters than we have, as in
+        # _ellipsis_match('aa...aa', 'aaa')
+        return False
+
+    # For the rest, we only need to find the leftmost non-overlapping
+    # match for each piece.  If there's no overall match that way alone,
+    # there's no overall match period.
+    for w in ws:
+        # w may be '' at times, if there are consecutive ellipses, or
+        # due to an ellipsis at the start or end of `want`.  That's OK.
+        # Search for an empty string succeeds, and doesn't change startpos.
+        startpos = got.find(w, startpos, endpos)
+        if startpos < 0:
+            return False
+        startpos += len(w)
+
+    return True
+
 def generate_unified_diff(file1, file2):
     """Generate a unified diff between two files with normalization."""
+
+    lines1 = list(normalize_file_lines(file1))
+    lines2 = list(normalize_file_lines(file2))
+    equal = True
+    for want, got in zip(lines1, lines2):
+        # We do not allow the ellipsis to span multiple lines.
+        if not ellipsis_match(want = want, got = got):
+            equal = False
+            break
+            
+    if equal:
+        return ""
+        
     diff = difflib.unified_diff(
-        list(normalize_file_lines(file1)),
-        list(normalize_file_lines(file2)),
+        lines1,
+        lines2,
         fromfile=file1, 
         tofile=file2, 
         lineterm=''
@@ -83,7 +145,6 @@ def run_test(test, program, dir_out):
     diff_output = generate_unified_diff(expfile, outfile)
     if len(diff_output) == 0:
         print(f"passed  {elapsed_time:6.2f}")
-        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") == 0
         os.remove(outfile)
         return True
     else:
