@@ -1,0 +1,3 @@
+${PROGRAM} -r ../data/rmnk_0.0_2_16_1_0_ref.txt ../data/${TESTNAME} --maximise
+${PROGRAM} -r ../data/rmnk_0.0_2_16_1_0_ref.txt ../data/${TESTNAME} --multiplicative --maximise
+
