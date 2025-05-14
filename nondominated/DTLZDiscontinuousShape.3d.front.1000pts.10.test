@@ -1,0 +1,1 @@
+$PROGRAM < ../data/${TESTNAME} --union --quiet --filter | sort --ignore-leading-blanks
