@@ -1,0 +1,1 @@
+$PROGRAM -r "5 5" < ${TESTNAME}.inp 
