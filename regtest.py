@@ -6,6 +6,7 @@ import sys
 import glob
 import time
 import tempfile
+from itertools import zip_longest
 from joblib import Parallel, delayed
 
 import re
@@ -79,7 +80,8 @@ def generate_unified_diff(file1, file2):
     lines1 = list(normalize_file_lines(file1))
     lines2 = list(normalize_file_lines(file2))
     equal = True
-    for want, got in zip(lines1, lines2):
+
+    for want, got in zip_longest(lines1, lines2, fillvalue=""):
         # We do not allow the ellipsis to span multiple lines.
         if not ellipsis_match(want = want, got = got):
             equal = False
