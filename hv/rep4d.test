@@ -1,0 +1,1 @@
+$PROGRAM < ${TESTNAME}.inp  -r "20 20 20 20"
