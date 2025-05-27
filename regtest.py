@@ -8,6 +8,7 @@ import time
 import tempfile
 from itertools import zip_longest
 from joblib import Parallel, delayed
+from rich import print as print_rich
 
 import re
 import difflib
@@ -146,11 +147,11 @@ def run_test(test, program, dir_out):
 
     diff_output = generate_unified_diff(expfile, outfile)
     if len(diff_output) == 0:
-        print(f"passed  {elapsed_time:6.2f}")
+        print_rich(f"passed[green]✓[/] {elapsed_time:6.2f}")
         os.remove(outfile)
         return True
     else:
-        print(f"FAILED! {elapsed_time:6.2f}")
+        print_rich(f"[bold red]FAILED![/] {elapsed_time:6.2f}")
         print(diff_output) # f"{diff} -uiEBw -- {expfile} {outfile}")
         #print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
         assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") != 0, f"{generate_unified_diff(expfile, outfile)}"
@@ -187,7 +188,7 @@ def main():
     nfailed = ntotal - npassed
     if nfailed == 0:
         shutil.rmtree(dir_out)
-    print("\n === regression test summary ===\n")
+    print("\n==== regression test summary ====\n")
     print(f"# of total tests : {ntotal:5d}")
     print(f"# of passed tests: {npassed:5d}")
     print(f"# of failed tests: {nfailed:5d}\n")
