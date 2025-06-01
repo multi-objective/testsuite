@@ -1,1 +1,5 @@
-${PROGRAM} -r "0 0 0 0 0 -3" badref.inp
+${PROGRAM} -r "0 0 0 0 0 -3" ${TESTNAME}.inp
+echo "=== oneleft ==="
+${PROGRAM} -r "-1 -1 -1 -1 -1 -1" ${TESTNAME}.inp
+echo "=== emptyref ==="
+${PROGRAM} -r "-4 -4 -4 -4 -4 -4" ${TESTNAME}.inp

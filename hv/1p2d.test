@@ -1,1 +1,3 @@
-$PROGRAM -r "5 5" < ${TESTNAME}.inp 
+$PROGRAM -r "5 5" < ${TESTNAME}.inp
+echo "=== empty ==="
+$PROGRAM -r "0 0" < ${TESTNAME}.inp

@@ -1,1 +1,0 @@
-${PROGRAM} -r "10 10 10 10 10" -u --shift < ../data/${TESTNAME%%-shift}

@@ -1,1 +1,0 @@
-${PROGRAM} -r "-1 -1 -1 -1 -1 -1" badref.inp
