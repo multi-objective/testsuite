@@ -34,7 +34,7 @@ def ellipsis_match(want, got):
     ELLIPSIS_MARKER='...'
     if ELLIPSIS_MARKER not in want:
         return want == got
-    
+
     # Find "the real" strings.
     ws = want.split(ELLIPSIS_MARKER)
     assert len(ws) >= 2
@@ -87,15 +87,15 @@ def generate_unified_diff(file1, file2):
         if not ellipsis_match(want = want, got = got):
             equal = False
             break
-            
+
     if equal:
         return ""
-        
+
     diff = difflib.unified_diff(
         lines1,
         lines2,
-        fromfile=file1, 
-        tofile=file2, 
+        fromfile=file1,
+        tofile=file2,
         lineterm=''
     )
     return '\n'.join(diff)
@@ -110,7 +110,7 @@ def runcmd(command, cwd = None, env = {}, outfile = subprocess.DEVNULL):
         open_func = lzma.open if outfile.endswith('.xz') else open
         with open_func(outfile, "wb") as fh:
             fh.write(result.stdout)
-            
+
     return result.returncode
 
 
@@ -169,7 +169,7 @@ def main():
         print(f"error: '{program}' not found or not executable!")
         sys.exit(1)
 
-    tests = sorted(glob.glob("*.test")) if len(sys.argv) == 2 else sys.argv[2:]
+    tests = sorted(glob.glob("**/*.test", recursive=True)) if len(sys.argv) == 2 else sys.argv[2:]
     for test in tests:
         if not test.endswith(".test"):
             print(test, "is not a test file")
@@ -177,7 +177,7 @@ def main():
         if not os.path.isfile(test):
             print(test, "not found or not readable")
             sys.exit(1)
-            
+
 
     ntotal = len(tests)
     dir_out = tempfile.mkdtemp()
