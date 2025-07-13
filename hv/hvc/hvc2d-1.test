@@ -1,0 +1,1 @@
+${PROGRAM} --contributions -r "100 100" ${TESTNAME}.inp
