@@ -100,6 +100,12 @@ def generate_unified_diff(file1, file2):
     )
     return '\n'.join(diff)
 
+def truncate_lines(output: str, max_lines: int) -> str:
+    lines = output.splitlines()
+    if len(lines) <= max_lines:
+        return output # Return unmodified
+    return '\n'.join(lines[:max_lines] + ['...truncated'])
+
 def runcmd(command, cwd = None, env = {}, outfile = subprocess.DEVNULL):
     env['LC_ALL'] = "C" # To avoid problems with sorting.
     stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
@@ -152,7 +158,7 @@ def run_test(test, program, dir_out):
         return True
     else:
         print_rich(f"[bold red]FAILED![/] {elapsed_time:6.2f}")
-        print(diff_output) # f"{diff} -uiEBw -- {expfile} {outfile}")
+        print(truncate_lines(diff_output, max_lines = 20)) # f"{diff} -uiEBw -- {expfile} {outfile}")
         #print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
         assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") != 0, f"{generate_unified_diff(expfile, outfile)}"
         return False
@@ -181,17 +187,23 @@ def main():
 
     ntotal = len(tests)
     dir_out = tempfile.mkdtemp()
+    elapsed_time = time.time()
     ok = Parallel(n_jobs=-2)(
         delayed(run_test)(test, dir_out=dir_out, program=program) for test in tests
     )
+    elapsed_time = time.time() - elapsed_time
     npassed = sum(ok)
     nfailed = ntotal - npassed
     if nfailed == 0:
         shutil.rmtree(dir_out)
-    print("\n==== regression test summary ====\n")
-    print(f"# of total tests : {ntotal:5d}")
-    print(f"# of passed tests: {npassed:5d}")
-    print(f"# of failed tests: {nfailed:5d}\n")
+    print(f"""
+
+===== regression test summary =====
+ # of total tests : {ntotal:5d}
+ # of passed tests: {npassed:5d}
+ # of failed tests: {nfailed:5d}
+ #     total time : {elapsed_time:8.2f}
+    """)
     exitcode = 1 if nfailed > 0 else 0
     sys.exit(exitcode)
 
