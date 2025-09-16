@@ -128,12 +128,13 @@ def is_exe(fpath):
         and os.path.getsize(fpath) > 0
     )
 
-def run_test(test, program, dir_out):
+def run_test(test, program):
     testdirname = os.path.dirname(test)
     if testdirname == "":
         testdirname = None
     testbasename = os.path.basename(test)
-    outfile = os.path.join(dir_out, testbasename.replace(".test", ".out"))
+    fh, outfile = tempfile.mkstemp(suffix="_" + testbasename.replace(".test", ".out"))
+    os.close(fh)
     expfile = test.replace(".test", ".exp")
     diff = "diff"
     if not os.access(expfile, os.R_OK) and os.access(expfile + ".xz", os.R_OK):
@@ -186,16 +187,13 @@ def main():
 
 
     ntotal = len(tests)
-    dir_out = tempfile.mkdtemp()
     elapsed_time = time.time()
     ok = Parallel(n_jobs=-2)(
-        delayed(run_test)(test, dir_out=dir_out, program=program) for test in tests
+        delayed(run_test)(test, program=program) for test in tests
     )
     elapsed_time = time.time() - elapsed_time
     npassed = sum(ok)
     nfailed = ntotal - npassed
-    if nfailed == 0:
-        shutil.rmtree(dir_out)
     print(f"""
 
 ===== regression test summary =====
