@@ -19,7 +19,7 @@ concurrency:
 
 permissions:
   contents: read # access to check out code and install dependencies
-  
+
 jobs:
   test:
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
@@ -31,6 +31,7 @@ jobs:
         include:
           - { os: ubuntu-22.04, cc: gcc, python-version: '3.10' }
           - { os: ubuntu-24.04, cc: gcc-14, python-version: '3.10' }
+          - { os: ubuntu-24.04, cc: clang, python-version: '3.10' }
           # FIXME: needs
           # * brew install xz
           # * fix options only available in GNU diff
@@ -41,14 +42,14 @@ jobs:
 
     steps:
       - name: Checkout moocore
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: multi-objective/moocore
           sparse-checkout: |
             c
-            
+
       - name: Checkout testsuite
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: testsuite
 
@@ -56,7 +57,7 @@ jobs:
         shell: bash
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -71,7 +72,7 @@ jobs:
         run: |
           source env/bin/activate
           make -C c time
-          
+
       - name: make test
         run: |
           source env/bin/activate
