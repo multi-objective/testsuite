@@ -23,7 +23,7 @@ permissions:
 jobs:
   test:
     if: "! contains(github.event.head_commit.message, '[skip ci]')"
-    name: Build C code on ${{ matrix.os }} with ${{ matrix.cc }}
+    name: Run testsuite on ${{ matrix.os }} with ${{ matrix.cc }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
