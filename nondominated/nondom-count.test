@@ -1,0 +1,4 @@
+$PROGRAM --verbose --union ../data/DTLZDiscontinuousShape.3d.front.1000pts.10
+$PROGRAM --verbose --union ../data/DTLZLinearShape.3d.front.1000pts.10
+$PROGRAM --verbose --union ../data/DTLZSphereShape.5d.front.1000pts.10
+$PROGRAM --verbose --union ../data/ran.1000pts.3d.10

@@ -1,0 +1,44 @@
+# file: ...DTLZDiscontinuousShape.3d.front.1000pts.10
+# objectives (3): ---
+# sets: 1
+# sizes: 10000
+# points: 10000
+...
+...
+...                                  filename      set     size    nondom  dom
+...DTLZDiscontinuousShape.3d.front.1000pts.10      1       10000   6539    3461
+# nondominated: FALSE
+#
+# file: ...DTLZLinearShape.3d.front.1000pts.10
+# objectives (3): ---
+# sets: 1
+# sizes: 10000
+# points: 10000
+...
+...
+...                           filename     set     size    nondom  dom
+...DTLZLinearShape.3d.front.1000pts.10     1       10000   6498    3502
+# nondominated: FALSE
+#
+# file: ...DTLZSphereShape.5d.front.1000pts.10
+# objectives (5): -----
+# sets: 1
+# sizes: 10000
+# points: 10000
+...
+...
+...                           filename     set     size    nondom  dom
+...DTLZSphereShape.5d.front.1000pts.10     1       10000   6541    3459
+# nondominated: FALSE
+#
+# file: ...ran.1000pts.3d.10
+# objectives (3): ---
+# sets: 1
+# sizes: 10000
+# points: 10000
+...
+...
+...         filename       set     size    nondom  dom
+...ran.1000pts.3d.10       1       10000   892     9108
+# nondominated: FALSE
+#
