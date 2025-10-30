@@ -3,7 +3,3 @@ xzcat ../data/rmnk_0.0_10_16_1_0_ref.txt.xz > $reference
 xzcat ../data/${TESTNAME}.xz | ${PROGRAM} -r $reference --additive
 xzcat ../data/${TESTNAME}.xz | ${PROGRAM} -r $reference --additive --maximise
 rm -f $reference
-
-
-
-

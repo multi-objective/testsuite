@@ -2,7 +2,3 @@ ${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --additive
 ${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --multiplicative
 ${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --additive --obj=--------
 ${PROGRAM} -r ../data/${TESTNAME} ../data/${TESTNAME} --multiplicative --obj=--------
-
-
-
-

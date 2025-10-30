@@ -1,2 +1,1 @@
 xzcat ../data/${TESTNAME}.inp.xz | $PROGRAM -r "-117751 -117751"
-

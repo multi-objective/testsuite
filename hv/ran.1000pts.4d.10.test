@@ -1,3 +1,2 @@
 ${PROGRAM} -r "10 10 10 10" < ../data/${TESTNAME}
 ${PROGRAM} -r "10 10 10 10" -u < ../data/${TESTNAME}
-
