@@ -14,9 +14,11 @@ import re
 import difflib
 import lzma
 
+# debug = True will use the command-line diff (or xzdiff) to check the results of difflib.
+debug = False
+
 _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
-# FIXME: Replace "diff" with difflib.
 def normalize_file_lines(file_path):
     """Yield normalized lines from a file, supporting both regular and XZ-compressed files."""
     open_func = lzma.open if file_path.endswith('.xz') else open
@@ -136,11 +138,9 @@ def run_test(test, program):
     fh, outfile = tempfile.mkstemp(suffix="_" + testbasename.replace(".test", ".out"))
     os.close(fh)
     expfile = test.replace(".test", ".exp")
-    diff = "diff"
     if not os.access(expfile, os.R_OK) and os.access(expfile + ".xz", os.R_OK):
         expfile = expfile + ".xz"
         outfile = outfile + ".xz"
-        diff = "xzdiff"
 
     print("{:<60}".format("Running " + test + " :"), end=" ")
     start_time = time.time()
@@ -159,9 +159,11 @@ def run_test(test, program):
         return True
     else:
         print_rich(f"[bold red]FAILED![/] {elapsed_time:6.2f}")
-        print(truncate_lines(diff_output, max_lines = 20)) # f"{diff} -uiEBw -- {expfile} {outfile}")
-        #print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
-        assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") != 0, f"{generate_unified_diff(expfile, outfile)}"
+        print(truncate_lines(diff_output, max_lines = 20))
+        if debug:
+            diff = "xzdiff" if expfile.endswith(".xz") else "diff"
+            print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
+            assert runcmd(f"{diff} -iEBwq -- {expfile} {outfile}") != 0, diff_output
         return False
 
 
