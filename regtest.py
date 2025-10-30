@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import shutil
 import subprocess
 import sys
 import glob
@@ -19,21 +18,24 @@ debug = False
 
 _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
+
 def normalize_file_lines(file_path):
     """Yield normalized lines from a file, supporting both regular and XZ-compressed files."""
-    open_func = lzma.open if file_path.endswith('.xz') else open
-    with open_func(file_path, 'rt', encoding='utf-8') as f:
+    open_func = lzma.open if file_path.endswith(".xz") else open
+    with open_func(file_path, "rt", encoding="utf-8") as f:
         for line in f:
-            line = _RE_COMBINE_WHITESPACE.sub(" ", line).strip() # Normalize whitespace, and tabs
+            line = _RE_COMBINE_WHITESPACE.sub(
+                " ", line
+            ).strip()  # Normalize whitespace, and tabs
             if line:  # Ignore blank lines
-                yield line.lower() # Normalize case
+                yield line.lower()  # Normalize case
+
 
 # This function is adapted from https://github.com/python/cpython/blob/main/Lib/doctest.py
 # Released to the public domain 16-Jan-2001, by Tim Peters (tim@python.org).
 def ellipsis_match(want, got):
-    """"Compares ``want`` to ``got`` ignoring differences where ``...`` appears in ``want``.
-    """
-    ELLIPSIS_MARKER='...'
+    """ "Compares ``want`` to ``got`` ignoring differences where ``...`` appears in ``want``."""
+    ELLIPSIS_MARKER = "..."
     if ELLIPSIS_MARKER not in want:
         return want == got
 
@@ -44,14 +46,14 @@ def ellipsis_match(want, got):
     # Deal with exact matches possibly needed at one or both ends.
     startpos, endpos = 0, len(got)
     w = ws[0]
-    if w: # starts with exact match
+    if w:  # starts with exact match
         if got.startswith(w):
             startpos = len(w)
             del ws[0]
         else:
             return False
     w = ws[-1]
-    if w: # ends with exact match
+    if w:  # ends with exact match
         if got.endswith(w):
             endpos -= len(w)
             del ws[-1]
@@ -77,6 +79,7 @@ def ellipsis_match(want, got):
 
     return True
 
+
 def generate_unified_diff(file1, file2):
     """Generate a unified diff between two files with normalization."""
 
@@ -86,7 +89,7 @@ def generate_unified_diff(file1, file2):
 
     for want, got in zip_longest(lines1, lines2, fillvalue=""):
         # We do not allow the ellipsis to span multiple lines.
-        if not ellipsis_match(want = want, got = got):
+        if not ellipsis_match(want=want, got=got):
             equal = False
             break
 
@@ -94,28 +97,27 @@ def generate_unified_diff(file1, file2):
         return ""
 
     diff = difflib.unified_diff(
-        lines1,
-        lines2,
-        fromfile=file1,
-        tofile=file2,
-        lineterm=''
+        lines1, lines2, fromfile=file1, tofile=file2, lineterm=""
     )
-    return '\n'.join(diff)
+    return "\n".join(diff)
+
 
 def truncate_lines(output: str, max_lines: int) -> str:
     lines = output.splitlines()
     if len(lines) <= max_lines:
-        return output # Return unmodified
-    return '\n'.join(lines[:max_lines] + ['...truncated'])
+        return output  # Return unmodified
+    return "\n".join(lines[:max_lines] + ["...truncated"])
 
-def runcmd(command, cwd = None, env = {}, outfile = subprocess.DEVNULL):
-    env['LC_ALL'] = "C" # To avoid problems with sorting.
+
+def runcmd(command, cwd=None, env={}, outfile=subprocess.DEVNULL):
+    env["LC_ALL"] = "C"  # To avoid problems with sorting.
     stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
-    result = subprocess.run(command, shell=True, env = env, cwd = cwd,
-                            stdout = stdout, stderr = subprocess.STDOUT)
+    result = subprocess.run(
+        command, shell=True, env=env, cwd=cwd, stdout=stdout, stderr=subprocess.STDOUT
+    )
 
     if stdout == subprocess.PIPE:
-        open_func = lzma.open if outfile.endswith('.xz') else open
+        open_func = lzma.open if outfile.endswith(".xz") else open
         with open_func(outfile, "wb") as fh:
             fh.write(result.stdout)
 
@@ -129,6 +131,7 @@ def is_exe(fpath):
         and os.access(fpath, os.X_OK)
         and os.path.getsize(fpath) > 0
     )
+
 
 def run_test(test, program):
     testdirname = os.path.dirname(test)
@@ -146,10 +149,12 @@ def run_test(test, program):
     start_time = time.time()
     # FIXME: How can we avoid using '.' to read the test?
     # Using 'source' only works in bash.
-    runcmd(f". ./{testbasename}", cwd = testdirname,
-           env = dict(PROGRAM=program,
-                      TESTNAME=testbasename.replace(".test", "")),
-           outfile = outfile)
+    runcmd(
+        f". ./{testbasename}",
+        cwd=testdirname,
+        env=dict(PROGRAM=program, TESTNAME=testbasename.replace(".test", "")),
+        outfile=outfile,
+    )
     elapsed_time = time.time() - start_time
 
     diff_output = generate_unified_diff(expfile, outfile)
@@ -159,7 +164,7 @@ def run_test(test, program):
         return True
     else:
         print_rich(f"[bold red]FAILED![/] {elapsed_time:6.2f}")
-        print(truncate_lines(diff_output, max_lines = 20))
+        print(truncate_lines(diff_output, max_lines=20))
         if debug:
             diff = "xzdiff" if expfile.endswith(".xz") else "diff"
             print(subprocess.getoutput(f"{diff} -uiEBw -- {expfile} {outfile}"))
@@ -178,7 +183,11 @@ def main():
         print(f"error: '{program}' not found or not executable!")
         sys.exit(1)
 
-    tests = sorted(glob.glob("**/*.test", recursive=True)) if len(sys.argv) == 2 else sys.argv[2:]
+    tests = (
+        sorted(glob.glob("**/*.test", recursive=True))
+        if len(sys.argv) == 2
+        else sys.argv[2:]
+    )
     for test in tests:
         if not test.endswith(".test"):
             print(test, "is not a test file")
@@ -187,12 +196,9 @@ def main():
             print(test, "not found or not readable")
             sys.exit(1)
 
-
     ntotal = len(tests)
     elapsed_time = time.time()
-    ok = Parallel(n_jobs=-2)(
-        delayed(run_test)(test, program=program) for test in tests
-    )
+    ok = Parallel(n_jobs=-2)(delayed(run_test)(test, program=program) for test in tests)
     elapsed_time = time.time() - elapsed_time
     npassed = sum(ok)
     nfailed = ntotal - npassed
