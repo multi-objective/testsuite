@@ -55,7 +55,7 @@ jobs:
         with:
           path: testsuite
 
-      - run: $CC -v
+      - run: ${{ matrix.cc }} -v
         shell: bash
 
       - name: Set up Python ${{ matrix.python-version }}
