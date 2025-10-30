@@ -28,10 +28,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ ubuntu-24.04 ]
+        cc: [ gcc-12, gcc-13, gcc-14, clang-18 ]
+        python-version: ['3.10']
         include:
-          - { os: ubuntu-22.04, cc: gcc, python-version: '3.10' }
-          - { os: ubuntu-24.04, cc: gcc-14, python-version: '3.10' }
-          - { os: ubuntu-24.04, cc: clang, python-version: '3.10' }
+          - { os: ubuntu-22.04, cc: gcc-10, python-version: '3.10' }
+          - { os: ubuntu-22.04, cc: gcc-11, python-version: '3.10' }
           # FIXME: needs
           # * brew install xz
           # * fix options only available in GNU diff
@@ -68,12 +70,12 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r testsuite/requirements.txt
 
-      - name: make time
+      - name: make time (DEBUG=0, -O3 -flto)
         run: |
           source env/bin/activate
           make -C c time
 
-      - name: make test
+      - name: make test (DEBUG=1, -O3 -flto)
         run: |
           source env/bin/activate
           make -C c test OPT_CFLAGS="-O3 -flto"
