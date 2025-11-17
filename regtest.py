@@ -203,7 +203,6 @@ def main():
     npassed = sum(ok)
     nfailed = ntotal - npassed
     print(f"""
-
 ===== regression test summary =====
  # of total tests : {ntotal:5d}
  # of passed tests: {npassed:5d}
