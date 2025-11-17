@@ -1,0 +1,2 @@
+${PROGRAM} -r "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1" --method=1 --nsamples 100000 --seed=42 < ./${TESTNAME}.inp
+${PROGRAM} -r "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1" --method=2 --nsamples 100000 < ./${TESTNAME}.inp
