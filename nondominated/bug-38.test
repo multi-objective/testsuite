@@ -1,0 +1,1 @@
+$PROGRAM --union --quiet --filter -o -+++ < ./${TESTNAME}.inp
