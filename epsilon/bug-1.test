@@ -1,0 +1,6 @@
+${PROGRAM} -r ./${TESTNAME}-min-ref.inp ./${TESTNAME}-min.inp --additive
+${PROGRAM} -r ./${TESTNAME}-max-ref.inp ./${TESTNAME}-max.inp --additive --obj=+++++
+${PROGRAM} -r ./${TESTNAME}-minmax-ref.inp ./${TESTNAME}-minmax.inp --additive --obj=+-+-+
+${PROGRAM} -r ./${TESTNAME}-min-ref.inp ./${TESTNAME}-min.inp --multiplicative
+${PROGRAM} -r ./${TESTNAME}-max-ref.inp ./${TESTNAME}-max.inp --multiplicative --obj=+++++
+${PROGRAM} -r ./${TESTNAME}-minmax-ref.inp ./${TESTNAME}-minmax.inp --multiplicative --obj=+-+-+
