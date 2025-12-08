@@ -2,6 +2,12 @@ tmpfile1=$(mktemp -u)
 tmpfile2=$(mktemp -u)
 xzcat ../data/ALG_1_dat.xz > "$tmpfile1"
 xzcat ../data/ALG_2_dat.xz > "$tmpfile2"
+echo "# (1,2)"
 ${PROGRAM} --all -r "$tmpfile1" "$tmpfile2"
+${PROGRAM} --all --maximise -r "$tmpfile1" "$tmpfile2"
+${PROGRAM} --all --obj=+- -r "$tmpfile1" "$tmpfile2"
+echo "# (2,1)"
 ${PROGRAM} --all -r "$tmpfile2" "$tmpfile1"
+${PROGRAM} --all --maximise -r "$tmpfile2" "$tmpfile1"
+${PROGRAM} --all --obj=-+ -r "$tmpfile1" "$tmpfile2"
 rm -f "$tmpfile1" "$tmpfile2"
