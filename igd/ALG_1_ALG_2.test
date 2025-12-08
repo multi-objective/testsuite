@@ -1,0 +1,7 @@
+tmpfile1=$(mktemp -u)
+tmpfile2=$(mktemp -u)
+xzcat ../data/ALG_1_dat.xz > "$tmpfile1"
+xzcat ../data/ALG_2_dat.xz > "$tmpfile2"
+${PROGRAM} --all -r "$tmpfile1" "$tmpfile2"
+${PROGRAM} --all -r "$tmpfile2" "$tmpfile1"
+rm -f "$tmpfile1" "$tmpfile2"
