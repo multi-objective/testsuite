@@ -1,0 +1,4 @@
+tmpfile=$(mktemp -u)
+xzcat ../data/${TESTNAME}.dat.xz > "$tmpfile"
+${PROGRAM} --all -r "$tmpfile" "$tmpfile"
+rm -f "$tmpfile"
