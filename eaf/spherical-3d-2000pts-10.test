@@ -1,0 +1,1 @@
+xzcat ../data/${TESTNAME}.dat.xz | $PROGRAM --quiet | sort | cat --squeeze-blank
