@@ -18,6 +18,9 @@ debug = False
 
 _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
+ASAN_OPTIONS = os.getenv("ASAN_OPTIONS", "")
+UBSAN_OPTIONS = os.getenv("UBSAN_OPTIONS", "")
+
 
 def normalize_file_lines(file_path):
     """Yield normalized lines from a file, supporting both regular and XZ-compressed files."""
@@ -111,6 +114,8 @@ def truncate_lines(output: str, max_lines: int) -> str:
 
 def runcmd(command, cwd=None, env={}, outfile=subprocess.DEVNULL):
     env["LC_ALL"] = "C"  # To avoid problems with sorting.
+    env["ASAN_OPTIONS"] = ASAN_OPTIONS
+    env["UBSAN_OPTIONS"] = UBSAN_OPTIONS
     stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
     result = subprocess.run(
         command, shell=True, env=env, cwd=cwd, stdout=stdout, stderr=subprocess.STDOUT
