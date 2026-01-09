@@ -30,10 +30,10 @@ jobs:
       matrix:
         os: [ ubuntu-24.04 ]
         cc: [ gcc-12, gcc-13, gcc-14, clang-18 ]
-        python-version: ['3.10']
         include:
-          - { os: ubuntu-22.04, cc: gcc-10, python-version: '3.10' }
-          - { os: ubuntu-22.04, cc: gcc-11, python-version: '3.10' }
+          - { os: ubuntu-22.04,     cc: gcc-10 }
+          - { os: ubuntu-22.04,     cc: gcc-11 }
+          - { os: ubuntu-24.04-arm, cc: gcc-12 }
           # FIXME: needs
           # * brew install xz
           # * fix options only available in GNU diff
@@ -47,8 +47,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: multi-objective/moocore
-          sparse-checkout: |
-            c
+          sparse-checkout: c
 
       - name: Checkout testsuite
         uses: actions/checkout@v5
@@ -57,11 +56,6 @@ jobs:
 
       - run: ${{ matrix.cc }} -v
         shell: bash
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |
