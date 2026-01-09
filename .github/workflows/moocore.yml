@@ -73,3 +73,19 @@ jobs:
         run: |
           source env/bin/activate
           make -C c test OPT_CFLAGS="-O3 -flto"
+
+      - name: Collect failed test outputs
+        if: failure()
+        run: |
+          mkdir -p failed-test-outputs
+          TEMPDIR=$(python3 -c 'import tempfile; print(tempfile.gettempdir())')
+          find "$TEMPDIR" \( -name "*_*.out" -o -name "*_*.out.xz" \) -type f -exec sh -c 'cp "$1" "failed-test-outputs/$(basename "$1")"' _ {} \; || true
+          ls -la failed-test-outputs/ || true
+
+      - name: Upload failed test outputs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-tests-${{ matrix.os }}-${{ matrix.cc }}-${{ github.run_id }}
+          path: failed-test-outputs/
+          if-no-files-found: ignore
