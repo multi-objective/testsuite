@@ -112,13 +112,22 @@ def truncate_lines(output: str, max_lines: int) -> str:
     return "\n".join(lines[:max_lines] + ["...truncated"])
 
 
-def runcmd(command, cwd=None, env={}, outfile=subprocess.DEVNULL):
-    env["LC_ALL"] = "C"  # To avoid problems with sorting.
-    env["ASAN_OPTIONS"] = ASAN_OPTIONS
-    env["UBSAN_OPTIONS"] = UBSAN_OPTIONS
+def runcmd(command, cwd=None, env=None, outfile=subprocess.DEVNULL):
+    # Merge with os.environ to preserve PATH and other environment variables
+    full_env = os.environ.copy()
+    if env is not None:
+        full_env.update(env)
+    full_env["LC_ALL"] = "C"  # To avoid problems with sorting.
+    full_env["ASAN_OPTIONS"] = ASAN_OPTIONS
+    full_env["UBSAN_OPTIONS"] = UBSAN_OPTIONS
     stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
     result = subprocess.run(
-        command, shell=True, env=env, cwd=cwd, stdout=stdout, stderr=subprocess.STDOUT
+        command,
+        shell=True,
+        env=full_env,
+        cwd=cwd,
+        stdout=stdout,
+        stderr=subprocess.STDOUT,
     )
 
     if stdout == subprocess.PIPE:
