@@ -34,11 +34,7 @@ jobs:
           - { os: ubuntu-22.04,     cc: gcc-10 }
           - { os: ubuntu-22.04,     cc: gcc-11 }
           - { os: ubuntu-24.04-arm, cc: gcc-12 }
-          # FIXME: needs
-          # * brew install xz
-          # * fix options only available in GNU diff
-          #- { os: macos-15-intel, cc: clang, python-version: '3.10' }
-          #- { os: macos-14, cc: clang, python-version: '3.10' }
+          - { os: macos-14,         cc: clang  }
     env:
       CC: ${{ matrix.cc }}
 
