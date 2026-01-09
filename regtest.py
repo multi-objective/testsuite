@@ -139,18 +139,19 @@ def is_exe(fpath):
 
 
 def run_test(test, program):
+    print("{:<60}".format("Running " + test + " :"), end=" ")
     testdirname = os.path.dirname(test)
     if testdirname == "":
         testdirname = None
-    testbasename = os.path.basename(test)
-    fh, outfile = tempfile.mkstemp(suffix="_" + testbasename.replace(".test", ".out"))
-    os.close(fh)
+    out_ext = ".out"
     expfile = test.replace(".test", ".exp")
     if not os.access(expfile, os.R_OK) and os.access(expfile + ".xz", os.R_OK):
-        expfile = expfile + ".xz"
-        outfile = outfile + ".xz"
+        expfile += ".xz"
+        out_ext += ".xz"
 
-    print("{:<60}".format("Running " + test + " :"), end=" ")
+    testbasename = os.path.basename(test)
+    fh, outfile = tempfile.mkstemp(suffix="_" + testbasename.replace(".test", out_ext))
+    os.close(fh)
     start_time = time.time()
     # FIXME: How can we avoid using '.' to read the test?
     # Using 'source' only works in bash.
