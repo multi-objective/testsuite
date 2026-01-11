@@ -1,1 +1,1 @@
-${PROGRAM} -r "1 1 1 1 1 1 1 1 1" < ./${TESTNAME}.inp
+${PROGRAM} -r "1 1 1 1 1 1 1 1 1" -u < ./${TESTNAME}.inp

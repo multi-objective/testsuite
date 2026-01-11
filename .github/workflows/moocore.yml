@@ -70,10 +70,10 @@ jobs:
           cd testsuite/
           ./regtest.py ../bin/hv ./hv/bug-dtlz-linear-8d.test ./hv/bug-dtlz-linear-9d.test
 
-      - name: make test (DEBUG=1, -O0)
+      - name: make test (DEBUG=1, -O2 -flto)
         run: |
           source env/bin/activate
-          make -C c test OPT_CFLAGS="-O0"
+          make -C c test OPT_CFLAGS="-O2 -flto"
 
       - name: make time (DEBUG=0, -O3 -flto)
         run: |
