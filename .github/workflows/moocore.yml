@@ -60,7 +60,12 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r testsuite/requirements.txt
 
-      - name: make test (DEBUG=1, -O3 -flto)
+      - name: make asan-hv (DEBUG=1, -O0)
+        run: |
+          source env/bin/activate
+          make -C c asan-hv OPT_CFLAGS="-O0"
+
+      - name: make test (DEBUG=1, -O0)
         run: |
           source env/bin/activate
           make -C c test OPT_CFLAGS="-O0"
