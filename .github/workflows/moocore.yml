@@ -71,7 +71,8 @@ jobs:
           cd testsuite/
           chmod u+x reduce.sh
           ./reduce.sh
-          #./regtest.py ../bin/hv ./hv/bug-dtlz-linear-8d.test
+          cp current.txt ./hv/bug-dtlz-linear-8d.inp
+          ./regtest.py ../bin/hv ./hv/bug-dtlz-linear-8d.test
 
       - name: make test (DEBUG=1, -O2 -flto)
         run: |
