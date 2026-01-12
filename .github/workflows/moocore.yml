@@ -33,7 +33,7 @@ jobs:
         include:
           # - { os: ubuntu-22.04,     cc: gcc-10 }
           # - { os: ubuntu-22.04,     cc: gcc-11 }
-          - { os: ubuntu-24.04-arm, cc: gcc-13 }
+          # - { os: ubuntu-24.04-arm, cc: gcc-13 }
           # - { os: macos-14,         cc: clang  }
           # - { os: macos-14,         cc: gcc-13 }
           # - { os: macos-15-intel,   cc: clang  }
@@ -47,6 +47,7 @@ jobs:
         with:
           repository: multi-objective/moocore
           sparse-checkout: c
+          ref: 'debug-testsuite'
 
       - name: Checkout testsuite
         uses: actions/checkout@v5
