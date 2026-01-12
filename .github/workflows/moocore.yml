@@ -47,7 +47,7 @@ jobs:
         with:
           repository: multi-objective/moocore
           sparse-checkout: c
-          ref: 'debug-testsuite'
+          ref: 'main'
 
       - name: Checkout testsuite
         uses: actions/checkout@v5
@@ -67,9 +67,11 @@ jobs:
       - name: make test (DEBUG=1, -O0)
         run: |
           source env/bin/activate
-          make -C c hv DEBUG=1 OPT_CFLAGS="-O0" SANITIZERS=""
+          make -C c hv DEBUG=0 OPT_CFLAGS="-O3 -flto" SANITIZERS=""
           cd testsuite/
-          ./regtest.py ../bin/hv ./hv/bug-dtlz-linear-8d.test
+          chmod u+x reduce.sh
+          ./reduce.sh
+          #./regtest.py ../bin/hv ./hv/bug-dtlz-linear-8d.test
 
       - name: make test (DEBUG=1, -O2 -flto)
         run: |
