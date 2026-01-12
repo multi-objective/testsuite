@@ -2,7 +2,7 @@
 
 set -e
 
-PROG="../bin/hv -r '1 1 1 1 1 1 1 1' "
+PROG="../bin/hv"
 ORIG="./hv/bug-dtlz-linear-8d.inp"
 WORK="current.txt"
 
@@ -11,7 +11,7 @@ cp "$ORIG" "$WORK"
 # Function to test whether the bug still occurs
 bug_triggers() {
     local value
-    value=$($PROG < "$1")
+    value=$($PROG -r '1 1 1 1 1 1 1 1' < "$1")
     awk "BEGIN { exit !($value >= 1.0) }"
 }
 
