@@ -54,7 +54,7 @@ while [ "$chunk_size" -ge 1 ]; do
     done
 
     if ! $reduced; then
-        chunk_size=$((chunk_size / 2))
+        chunk_size=$((chunk_size - 1))
     fi
 done
 
