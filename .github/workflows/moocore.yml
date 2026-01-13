@@ -47,7 +47,7 @@ jobs:
         with:
           repository: multi-objective/moocore
           sparse-checkout: c
-          ref: 'debug-testsuite'
+          #ref: 'debug-testsuite'
 
       - name: Checkout testsuite
         uses: actions/checkout@v5
