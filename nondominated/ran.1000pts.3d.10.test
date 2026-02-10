@@ -1,1 +1,1 @@
-xzcat ../eaf/${TESTNAME}.exp.xz | $PROGRAM --union --quiet --filter | sort --ignore-leading-blanks
+xzcat ../eaf/${TESTNAME}.exp.xz | $PROGRAM --union --quiet --filter | sort -b

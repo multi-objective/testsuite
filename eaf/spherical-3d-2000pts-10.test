@@ -1,1 +1,1 @@
-xzcat ../data/${TESTNAME}.dat.xz | $PROGRAM --quiet | sort --stable | cat --squeeze-blank
+xzcat ../data/${TESTNAME}.dat.xz | $PROGRAM --quiet | sort -s | cat -s

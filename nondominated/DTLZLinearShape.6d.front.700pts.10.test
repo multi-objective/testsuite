@@ -1,1 +1,1 @@
-xzcat ../data/${TESTNAME}.xz | $PROGRAM  --union --quiet --filter | sort --ignore-leading-blanks
+xzcat ../data/${TESTNAME}.xz | $PROGRAM  --union --quiet --filter | sort -b
