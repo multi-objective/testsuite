@@ -1,0 +1,1 @@
+${PROGRAM} --obj=0+-+-+-0- --filter --union < ../data/${TESTNAME}
