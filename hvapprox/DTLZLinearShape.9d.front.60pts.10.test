@@ -1,2 +1,3 @@
 ${PROGRAM} -r "1 1 1 1 1 1 1 1 1" --method=1 --nsamples 100000 --seed=42 -u < ../data/${TESTNAME}
 ${PROGRAM} -r "1 1 1 1 1 1 1 1 1" --method=2 --nsamples 100000 -u < ../data/${TESTNAME}
+${PROGRAM} -r "1 1 1 1 1 1 1 1 1" --method=3 --nsamples 100000 -u < ../data/${TESTNAME}
