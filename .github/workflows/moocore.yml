@@ -74,6 +74,18 @@ jobs:
           source env/bin/activate
           make -C c test OPT_CFLAGS="-O3 -flto"
 
+      - name: make asan (DEBUG=0, -O3 -flto -g3)
+        if: ${{ matrix.os == 'ubuntu-24.04' && ( matrix.cc == 'gcc-14' || matrix.cc == 'clang-18') }}
+        run: |
+          source env/bin/activate
+          make -C c asan OPT_CFLAGS="-O3 -flto -g3"
+
+      - name: make ubsan (DEBUG=0, -O2 -flto -g3)
+        if: ${{ matrix.os == 'ubuntu-24.04' && ( matrix.cc == 'gcc-14' || matrix.cc == 'clang-18') }}
+        run: |
+          source env/bin/activate
+          make -C c ubsan OPT_CFLAGS="-O2 -flto -g3"
+
       - name: Collect failed test outputs
         if: failure()
         run: |
