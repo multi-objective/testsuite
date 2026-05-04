@@ -44,13 +44,13 @@ jobs:
 
     steps:
       - name: Checkout moocore
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: multi-objective/moocore
           sparse-checkout: c
 
       - name: Checkout testsuite
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: testsuite
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload failed test outputs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: failed-tests-${{ matrix.os }}-${{ matrix.cc }}-${{ github.run_id }}
           path: failed-test-outputs/
