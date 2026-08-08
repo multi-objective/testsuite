@@ -125,6 +125,7 @@ def runcmd(command, cwd=None, env=None, outfile=subprocess.DEVNULL):
         command,
         shell=True,
         env=full_env,
+        check=False,
         cwd=cwd,
         stdout=stdout,
         stderr=subprocess.STDOUT,
@@ -167,7 +168,7 @@ def run_test(test, program):
     runcmd(
         f". ./{testbasename}",
         cwd=testdirname,
-        env=dict(PROGRAM=program, TESTNAME=testbasename.replace(".test", "")),
+        env={"PROGRAM": program, "TESTNAME": testbasename.replace(".test", "")},
         outfile=outfile,
     )
     elapsed_time = time.time() - start_time
