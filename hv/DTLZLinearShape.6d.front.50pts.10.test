@@ -1,1 +1,1 @@
-${PROGRAM} -r "1 1 1 1 1 1" -u < ../data/${TESTNAME}
+${PROGRAM} -r "1 1 1 1 1 1" --union < ../data/${TESTNAME}

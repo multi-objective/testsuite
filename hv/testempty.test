@@ -1,1 +1,1 @@
-${PROGRAM} -u testempty.inp
+${PROGRAM} --union testempty.inp
