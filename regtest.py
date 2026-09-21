@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
+import difflib
+import glob
+import lzma
 import os
+import re
 import subprocess
 import sys
-import glob
-import time
 import tempfile
+import time
 from itertools import zip_longest
+
 from joblib import Parallel, delayed
 from rich import print as print_rich
-
-import re
-import difflib
-import lzma
 
 # debug = True will use the command-line diff (or xzdiff) to check the results of difflib.
 debug = False
