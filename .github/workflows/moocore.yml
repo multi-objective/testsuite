@@ -34,8 +34,8 @@ jobs:
           - { os: ubuntu-22.04,     cc: gcc-10 }
           - { os: ubuntu-22.04,     cc: gcc-11 }
           - { os: ubuntu-24.04-arm, cc: gcc-12 }
-          - { os: macos-14,         cc: clang  }
-          - { os: macos-14,         cc: gcc-13 }
+          - { os: macos-15,         cc: clang  }
+          - { os: macos-15,         cc: gcc-13 }
           - { os: macos-15-intel,   cc: clang  }
           - { os: macos-15-intel,   cc: gcc-13 }
 
