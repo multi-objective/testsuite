@@ -10,10 +10,7 @@ from itertools import zip_longest
 from pathlib import Path
 from rich import print as print_rich
 
-try:
-    from joblib import Parallel, delayed
-except ImportError:  # joblib is optional: fall back to sequential execution.
-    Parallel = delayed = None
+from joblib import Parallel, delayed
 
 import re
 import difflib
@@ -426,16 +423,13 @@ def main():
 
     ntotal = len(tests)
     elapsed_time = time.time()
-    ok = None
-    if Parallel is not None:
-        try:
-            ok = Parallel(n_jobs=-2)(
-                delayed(run_test)(test, program=program) for test in tests
-            )
-        except Exception as e:  # e.g. worker processes cannot be spawned
-            print(f"warning: parallel execution failed ({e!r}); running sequentially")
-    if ok is None:
-        ok = [run_test(test, program=program) for test in tests]
+    # The loky backend starts worker processes with spawn semantics on every
+    # platform (as required on Windows), so run_test is a top-level function
+    # and all its arguments are picklable. Workers inherit PYTHONUTF8 and
+    # PYTHONIOENCODING from the environment set at import time.
+    ok = Parallel(n_jobs=-2, backend="loky")(
+        delayed(run_test)(test, program=program) for test in tests
+    )
     elapsed_time = time.time() - elapsed_time
     npassed = sum(ok)
     nfailed = ntotal - npassed

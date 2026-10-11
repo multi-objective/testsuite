@@ -26,7 +26,7 @@ Windows
 -------
 
 The testsuite runs on Windows with the executables of `moocore` built with MSVC.
-`regtest.py` only needs Python (and optionally `joblib`, otherwise tests run sequentially); no Unix utilities are required.
+`regtest.py` only needs Python and `joblib` (see `requirements.txt`); no Unix utilities are required.
 On Windows, `regtest.py`:
 
  * runs the `*.test` files with a built-in minimal interpreter (variables, `|`, `<`, `>`, `echo`, `rm`) instead of a shell, and
