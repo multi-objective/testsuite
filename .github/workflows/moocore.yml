@@ -134,8 +134,12 @@ jobs:
         run: make -C c all CC=cl DEBUG=1
 
       - name: Run testsuite
-        shell: bash
+        # Default shell (PowerShell) on purpose: no Unix tools are required.
         run: |
-          for t in dominatedsets eaf epsilon hv hvapprox igd ndsort nondominated; do
-            (cd testsuite/$t && python ../regtest.py "$GITHUB_WORKSPACE/bin/$t") || exit 1
-          done
+          foreach ($t in "dominatedsets","eaf","epsilon","hv","hvapprox","igd","ndsort","nondominated") {
+            Push-Location "testsuite/$t"
+            python ../regtest.py "$env:GITHUB_WORKSPACE/bin/$t"
+            $rc = $LASTEXITCODE
+            Pop-Location
+            if ($rc -ne 0) { exit $rc }
+          }
