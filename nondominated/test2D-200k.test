@@ -1,1 +1,1 @@
-xzcat ../data/${TESTNAME}.inp.xz | $PROGRAM --quiet --filter | sort -b -s
+${XZCAT} ../data/${TESTNAME}.inp.xz | $PROGRAM --quiet --filter | ${SORT} -b -s

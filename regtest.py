@@ -5,9 +5,15 @@ import sys
 import glob
 import time
 import tempfile
+import shlex
 from itertools import zip_longest
-from joblib import Parallel, delayed
+from pathlib import Path
 from rich import print as print_rich
+
+try:
+    from joblib import Parallel, delayed
+except ImportError:  # joblib is optional: fall back to sequential execution.
+    Parallel = delayed = None
 
 import re
 import difflib
@@ -15,6 +21,53 @@ import lzma
 
 # debug = True will use the command-line diff (or xzdiff) to check the results of difflib.
 debug = False
+
+IS_WINDOWS = sys.platform == "win32"
+# Set REGTEST_PORTABLE=1 to use the Windows code path on other platforms.
+USE_PORTABLE = IS_WINDOWS or os.getenv("REGTEST_PORTABLE") == "1"
+
+# Make sure that Python subprocesses and joblib workers use UTF-8.
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
+
+def setup_utf8_output():
+    """Avoid console-encoding crashes when printing unicode symbols."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
+setup_utf8_output()
+
+TOOLS_DIR = Path(__file__).resolve().parent / "tools"
+
+
+def _python_tool(script):
+    return shlex.join([Path(sys.executable).as_posix(), (TOOLS_DIR / script).as_posix()])
+
+
+# Commands used by the *.test files. Unix defaults are the standard utilities,
+# on Windows they are portable Python scripts from tools/. They can be
+# overridden by setting the corresponding environment variable.
+if USE_PORTABLE:
+    _TOOL_DEFAULTS = {
+        "XZCAT": _python_tool("xzcat.py"),
+        "SORT": _python_tool("sort.py"),
+        "CAT_SQUEEZE": _python_tool("cat_squeeze.py"),
+        "MKTEMP": _python_tool("mktemp.py"),
+    }
+else:
+    _TOOL_DEFAULTS = {
+        "XZCAT": "xzcat",
+        "SORT": "sort",
+        "CAT_SQUEEZE": "cat -s",
+        "MKTEMP": "mktemp",
+    }
+TOOL_ENV = {k: os.environ.get(k, v) for k, v in _TOOL_DEFAULTS.items()}
 
 _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
 
@@ -112,6 +165,140 @@ def truncate_lines(output: str, max_lines: int) -> str:
     return "\n".join(lines[:max_lines] + ["...truncated"])
 
 
+_RE_VAR = re.compile(r"\$(?:(\w+)|\{(\w+)\})")
+_RE_ASSIGN = re.compile(r"^(\w+)=(.*)$")
+_RE_SUBST = re.compile(r"^\$\((.*)\)$")
+
+
+def _expand(word, variables):
+    return _RE_VAR.sub(lambda m: variables.get(m.group(1) or m.group(2), ""), word)
+
+
+def _split_line(line):
+    lex = shlex.shlex(line, posix=True, punctuation_chars="|<>")
+    lex.whitespace_split = True
+    lex.commenters = ""
+    return list(lex)
+
+
+def _run_pipeline(line, variables, cwd, env):
+    """Run one simple pipeline of a test file (a tiny POSIX shell subset).
+
+    Supports variable expansion, '|', '<', '>', and the builtins echo and rm.
+    Returns the combined stdout/stderr of the pipeline as bytes.
+    """
+    stages = [[]]
+    stdin_file = stdout_file = None
+    tokens = _split_line(line)
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok == "|":
+            stages.append([])
+        elif tok in ("<", ">"):
+            i += 1
+            target = _expand(tokens[i], variables)
+            if tok == "<":
+                stdin_file = target
+            else:
+                stdout_file = target
+        else:
+            stages[-1].append(tok)
+        i += 1
+
+    argvs = []
+    for words in stages:
+        argv = []
+        for j, w in enumerate(words):
+            expanded = _expand(w, variables)
+            if j == 0 and w.startswith("$") and expanded.strip():
+                argv.extend(shlex.split(expanded))  # command stored in a variable
+            else:
+                argv.append(expanded)
+        argvs.append(argv)
+
+    if len(argvs) == 1 and argvs[0] and argvs[0][0] in ("echo", "rm"):
+        argv = argvs[0]
+        if argv[0] == "echo":
+            out = (" ".join(argv[1:]) + "\n").encode("utf-8")
+            if stdout_file:
+                Path(cwd or ".", stdout_file).write_bytes(out)
+                return b""
+            return out
+        for name in (a for a in argv[1:] if not a.startswith("-")):
+            try:
+                os.remove(os.path.join(cwd or ".", name))
+            except OSError:
+                pass
+        return b""
+
+    opened = []
+    procs = []
+    errs = []
+    try:
+        prev_out = None
+        if stdin_file:
+            prev_out = open(os.path.join(cwd or ".", stdin_file), "rb")
+            opened.append(prev_out)
+        for k, argv in enumerate(argvs):
+            last = k == len(argvs) - 1
+            if last and stdout_file:
+                stdout = open(os.path.join(cwd or ".", stdout_file), "wb")
+                opened.append(stdout)
+            else:
+                stdout = subprocess.PIPE
+            if last:
+                stderr = subprocess.STDOUT
+            else:
+                stderr = tempfile.TemporaryFile()
+                errs.append(stderr)
+            p = subprocess.Popen(
+                argv, stdin=prev_out, stdout=stdout, stderr=stderr, cwd=cwd, env=env
+            )
+            if k > 0:
+                procs[-1].stdout.close()
+            procs.append(p)
+            prev_out = p.stdout
+        out = procs[-1].communicate()[0] or b""
+        for p in procs[:-1]:
+            p.wait()
+        extra = b""
+        for e in errs:
+            e.seek(0)
+            extra += e.read()
+            e.close()
+        return extra + out
+    finally:
+        for f in opened:
+            f.close()
+
+
+def run_script_portable(script, cwd, env):
+    """Execute a *.test file without a POSIX shell (used on Windows)."""
+    variables = {k: env[k] for k in env}
+    output = b""
+    with open(os.path.join(cwd or ".", script), "r", encoding="utf-8") as fh:
+        lines = fh.read().splitlines()
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = _RE_ASSIGN.match(line)
+        if m and " " not in m.group(1):
+            name, value = m.groups()
+            sub = _RE_SUBST.match(value)
+            if sub:
+                value = _run_pipeline(sub.group(1), variables, cwd, env)
+                value = value.decode("utf-8").rstrip("\r\n")
+            else:
+                value = "".join(_split_line(value)) if value else ""
+                value = _expand(value, variables)
+            variables[name] = value
+            continue
+        output += _run_pipeline(line, variables, cwd, env)
+    return output
+
+
 def runcmd(command, cwd=None, env=None, outfile=subprocess.DEVNULL):
     # Merge with os.environ to preserve PATH and other environment variables
     full_env = os.environ.copy()
@@ -120,6 +307,16 @@ def runcmd(command, cwd=None, env=None, outfile=subprocess.DEVNULL):
     full_env["LC_ALL"] = "C"  # To avoid problems with sorting.
     full_env["ASAN_OPTIONS"] = ASAN_OPTIONS
     full_env["UBSAN_OPTIONS"] = UBSAN_OPTIONS
+    full_env.update(TOOL_ENV)
+    full_env["PYTHONUTF8"] = "1"
+    full_env["PYTHONIOENCODING"] = "utf-8"
+    if USE_PORTABLE and command.startswith(". ./"):
+        data = run_script_portable(command[4:], cwd, full_env)
+        if outfile != subprocess.DEVNULL:
+            open_func = lzma.open if outfile.endswith(".xz") else open
+            with open_func(outfile, "wb") as fh:
+                fh.write(data)
+        return 0
     stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
     result = subprocess.run(
         command,
@@ -139,6 +336,18 @@ def runcmd(command, cwd=None, env=None, outfile=subprocess.DEVNULL):
     return result.returncode
 
 
+def find_exe(fpath):
+    """Return the path of the executable, adding '.exe' on Windows if needed.
+
+    moocore's makefile appends '.exe' to the executables it builds.
+    """
+    fpath = os.path.realpath(os.path.expanduser(fpath))
+    if IS_WINDOWS and not fpath.lower().endswith(".exe"):
+        if os.path.isfile(fpath + ".exe") or not os.path.isfile(fpath):
+            fpath += ".exe"
+    return fpath
+
+
 def is_exe(fpath):
     fpath = os.path.expanduser(fpath)
     return (
@@ -149,6 +358,9 @@ def is_exe(fpath):
 
 
 def run_test(test, program):
+    setup_utf8_output()
+    if USE_PORTABLE:
+        program = Path(program).as_posix()
     print("{:<60}".format("Running " + test + " :"), end=" ")
     testdirname = os.path.dirname(test)
     if testdirname == "":
@@ -194,7 +406,7 @@ def main():
         print("\t for example:", sys.argv[0], "../bin/hv")
         sys.exit(1)
 
-    program = os.path.realpath(os.path.expanduser(sys.argv[1]))
+    program = find_exe(sys.argv[1])
     if not is_exe(program):
         print(f"error: '{program}' not found or not executable!")
         sys.exit(1)
@@ -214,7 +426,16 @@ def main():
 
     ntotal = len(tests)
     elapsed_time = time.time()
-    ok = Parallel(n_jobs=-2)(delayed(run_test)(test, program=program) for test in tests)
+    ok = None
+    if Parallel is not None:
+        try:
+            ok = Parallel(n_jobs=-2)(
+                delayed(run_test)(test, program=program) for test in tests
+            )
+        except Exception as e:  # e.g. worker processes cannot be spawned
+            print(f"warning: parallel execution failed ({e!r}); running sequentially")
+    if ok is None:
+        ok = [run_test(test, program=program) for test in tests]
     elapsed_time = time.time() - elapsed_time
     npassed = sum(ok)
     nfailed = ntotal - npassed

@@ -101,3 +101,41 @@ jobs:
           name: failed-tests-${{ matrix.os }}-${{ matrix.cc }}-${{ github.run_id }}
           path: failed-test-outputs/
           if-no-files-found: ignore
+
+  test-windows:
+    if: "! contains(github.event.head_commit.message, '[skip ci]')"
+    name: Run testsuite on windows-latest with MSVC
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: 1
+    steps:
+      - name: Checkout moocore
+        uses: actions/checkout@v6
+        with:
+          repository: multi-objective/moocore
+          sparse-checkout: c
+
+      - name: Checkout testsuite
+        uses: actions/checkout@v6
+        with:
+          path: testsuite
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install -r testsuite/requirements.txt
+
+      - name: Build moocore (MSVC)
+        shell: bash
+        run: make -C c all CC=cl DEBUG=1
+
+      - name: Run testsuite
+        shell: bash
+        run: |
+          for t in dominatedsets eaf epsilon hv hvapprox igd ndsort nondominated; do
+            (cd testsuite/$t && python ../regtest.py "$GITHUB_WORKSPACE/bin/$t") || exit 1
+          done

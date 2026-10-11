@@ -1,1 +1,1 @@
-xzcat ../data/${TESTNAME}.xz | $PROGRAM --maximise --union --quiet --filter | sort -b
+${XZCAT} ../data/${TESTNAME}.xz | $PROGRAM --maximise --union --quiet --filter | ${SORT} -b

@@ -1,7 +1,7 @@
-tmpfile1=$(mktemp -u)
-tmpfile2=$(mktemp -u)
-xzcat ../data/ALG_1_dat.xz > "$tmpfile1"
-xzcat ../data/ALG_2_dat.xz > "$tmpfile2"
+tmpfile1=$($MKTEMP -u)
+tmpfile2=$($MKTEMP -u)
+${XZCAT} ../data/ALG_1_dat.xz > "$tmpfile1"
+${XZCAT} ../data/ALG_2_dat.xz > "$tmpfile2"
 echo "# (1,2)"
 ${PROGRAM} --all -r "$tmpfile1" "$tmpfile2"
 ${PROGRAM} --all --maximise -r "$tmpfile1" "$tmpfile2"

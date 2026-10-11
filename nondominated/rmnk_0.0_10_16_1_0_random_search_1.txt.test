@@ -1,1 +1,1 @@
-xzcat ../data/${TESTNAME}.xz | $PROGRAM --union --verbose
+${XZCAT} ../data/${TESTNAME}.xz | $PROGRAM --union --verbose

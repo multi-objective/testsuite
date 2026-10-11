@@ -1,1 +1,1 @@
-xzcat ../eaf/${TESTNAME}.exp.xz | $PROGRAM --union --quiet --filter | sort -b
+${XZCAT} ../eaf/${TESTNAME}.exp.xz | $PROGRAM --union --quiet --filter | ${SORT} -b

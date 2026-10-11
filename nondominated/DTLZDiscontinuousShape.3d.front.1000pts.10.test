@@ -1,1 +1,1 @@
-$PROGRAM < ../data/${TESTNAME} --union --quiet --filter | sort -b
+$PROGRAM < ../data/${TESTNAME} --union --quiet --filter | ${SORT} -b

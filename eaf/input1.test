@@ -1,1 +1,1 @@
-${PROGRAM} --quiet -i- ../data/input1.dat | sort | cat -s
+${PROGRAM} --quiet -i- ../data/input1.dat | ${SORT} | ${CAT_SQUEEZE}
