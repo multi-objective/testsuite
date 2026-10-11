@@ -101,3 +101,38 @@ jobs:
           name: failed-tests-${{ matrix.os }}-${{ matrix.cc }}-${{ github.run_id }}
           path: failed-test-outputs/
           if-no-files-found: ignore
+
+  test-windows:
+    name: Run testsuite on Windows (MSYS2)
+    runs-on: windows-latest
+    env:
+      PYTHONIOENCODING: utf-8
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout moocore
+        uses: actions/checkout@v6
+        with:
+          repository: multi-objective/moocore
+          sparse-checkout: c
+
+      - name: Checkout testsuite
+        uses: actions/checkout@v6
+        with:
+          path: testsuite
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: >-
+            make
+            xz
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-python-joblib
+            mingw-w64-ucrt-x86_64-python-rich
+
+      - name: make test (DEBUG=1, -O3 -flto)
+        run: make -C c test OPT_CFLAGS="-O3 -flto"

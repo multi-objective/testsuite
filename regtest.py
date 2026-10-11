@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import pathlib
 import subprocess
 import sys
 import glob
@@ -121,9 +122,18 @@ def runcmd(command, cwd=None, env=None, outfile=subprocess.DEVNULL):
     full_env["ASAN_OPTIONS"] = ASAN_OPTIONS
     full_env["UBSAN_OPTIONS"] = UBSAN_OPTIONS
     stdout = outfile if outfile == subprocess.DEVNULL else subprocess.PIPE
+    bash = "bash"
+    if os.name == "nt":
+        msys_bash = (
+            pathlib.Path(sys.executable).parent.parent.parent
+            / "usr"
+            / "bin"
+            / "bash.exe"
+        )
+        if msys_bash.is_file():
+            bash = str(msys_bash)
     result = subprocess.run(
-        command,
-        shell=True,
+        [bash, "-c", command],
         env=full_env,
         check=False,
         cwd=cwd,
@@ -194,7 +204,13 @@ def main():
         print("\t for example:", sys.argv[0], "../bin/hv")
         sys.exit(1)
 
-    program = os.path.realpath(os.path.expanduser(sys.argv[1]))
+    program = pathlib.Path(os.path.realpath(os.path.expanduser(sys.argv[1]))).as_posix()
+    if (
+        os.name == "nt"
+        and not os.path.isfile(program)
+        and os.path.isfile(program + ".exe")
+    ):
+        program += ".exe"
     if not is_exe(program):
         print(f"error: '{program}' not found or not executable!")
         sys.exit(1)
@@ -214,7 +230,10 @@ def main():
 
     ntotal = len(tests)
     elapsed_time = time.time()
-    ok = Parallel(n_jobs=-2)(delayed(run_test)(test, program=program) for test in tests)
+    prefer = "threads" if os.name == "nt" else "processes"
+    ok = Parallel(n_jobs=-2, prefer=prefer)(
+        delayed(run_test)(test, program=program) for test in tests
+    )
     elapsed_time = time.time() - elapsed_time
     npassed = sum(ok)
     nfailed = ntotal - npassed
