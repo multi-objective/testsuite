@@ -1,3 +1,5 @@
-${PROGRAM} -r "10 10 10 10 10 10 10 10 10" --method=1 --nsamples 100000 --seed=42 --union < ../data/${TESTNAME}
+set -o pipefail
+# Compare the stochastic method against the low-discrepancy estimate.
+${PROGRAM} -r "10 10 10 10 10 10 10 10 10" --method=1 --nsamples 100000 --seed=42 --union < ../data/${TESTNAME} | python3 check_mc.py 116309924.781825 0.015 || echo "Monte Carlo pipeline failed"
 ${PROGRAM} -r "10 10 10 10 10 10 10 10 10" --method=2 --nsamples 100000 --union < ../data/${TESTNAME}
 ${PROGRAM} -r "10 10 10 10 10 10 10 10 10" --method=3 --nsamples 100000 --union < ../data/${TESTNAME}
