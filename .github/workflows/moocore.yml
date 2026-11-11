@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: multi-objective/moocore
-          ref: copilot/pcg64-rng
+          ref: 652d9cc7f588f3630e8edcbab39fcbd303b77e50
           sparse-checkout: c
 
       - name: Checkout testsuite
@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: multi-objective/moocore
-          ref: copilot/pcg64-rng
+          ref: 652d9cc7f588f3630e8edcbab39fcbd303b77e50
           sparse-checkout: c
 
       - name: Checkout testsuite
