@@ -1,0 +1,10 @@
+set -o pipefail
+printf '100\n' | python3 check_mc.py 100 0.015
+printf '101.5\n' | python3 check_mc.py 100 0.015
+for estimate in 101.51 98.49 nan; do
+    if printf '%s\n' "$estimate" | python3 check_mc.py 100 0.015 > /dev/null 2>&1; then
+        echo "invalid estimate accepted: $estimate"
+    else
+        echo "invalid estimate rejected"
+    fi
+done
