@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: multi-objective/moocore
-          ref: 652d9cc7f588f3630e8edcbab39fcbd303b77e50
+          ref: bd12cfadaf62d24c2dd11676065b2fbee2b82c10
           sparse-checkout: c
 
       - name: Checkout testsuite
@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: multi-objective/moocore
-          ref: 652d9cc7f588f3630e8edcbab39fcbd303b77e50
+          ref: bd12cfadaf62d24c2dd11676065b2fbee2b82c10
           sparse-checkout: c
 
       - name: Checkout testsuite
